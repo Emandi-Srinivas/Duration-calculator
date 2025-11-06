@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overnight Time Calculator</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1e40af',
+                        'secondary-gray': '#f3f4f6',
+                        'accent-yellow': '#fcd34d',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        body::-webkit-scrollbar-thumb {
+            background-color: #9ca3af;
+            border-radius: 10px;
+        }
+        body::-webkit-scrollbar-track {
+            background-color: #f3f4f6;
+        }
+
+        .shadow-custom {
+            box-shadow: 0 15px 30px -10px rgba(30, 64, 175, 0.2);
+        }
+
+        input[type="time"] {
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 0.5rem;
+            width: 100%;
+            border: 2px solid #d1d5db;
+            transition: all 0.2s;
+        }
+        input[type="time"]:focus {
+            outline: none;
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-secondary-gray min-h-screen flex items-center justify-center p-4 font-sans">
+
+    <div class="w-full max-w-lg bg-white p-8 md:p-10 rounded-xl shadow-custom border border-gray-100">
+        <h1 class="text-3xl font-extrabold text-primary-blue mb-4 text-center">
+            Overnight Shift Calculator
+        </h1>
+        <p class="text-center text-gray-500 mb-8">
+            Calculate the duration from yesterday night to today morning.
+        </p>
+
+        <!-- Input Section -->
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="flex flex-col">
+                <label for="startTime" class="text-sm font-semibold text-gray-700 mb-2">
+                    Start Time (Yesterday Night)
+                </label>
+                <input type="time" id="startTime" value="20:00" class="rounded-lg">
+            </div>
+
+            <div class="flex flex-col">
+                <label for="endTime" class="text-sm font-semibold text-gray-700 mb-2">
+                    End Time (Today Morning)
+                </label>
+                <input type="time" id="endTime" value="06:45" class="rounded-lg">
+            </div>
+        </div>
+
+        <!-- Calculate Button -->
+        <button id="calculateBtn"
+                onclick="calculateDuration()"
+                class="mt-8 w-full bg-primary-blue hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-primary-blue/50">
+            Calculate Duration
+        </button>
+
+        <!-- Result Display -->
+        <div id="resultContainer" class="mt-8 bg-accent-yellow/20 border-l-4 border-accent-yellow p-4 rounded-lg text-center hidden">
+            <p class="text-gray-700 text-lg font-medium">Total Duration:</p>
+            <p id="resultDisplay" class="text-4xl font-extrabold text-primary-blue mt-1">10 hrs 45 mins</p>
+        </div>
+
+        <!-- Error Box -->
+        <div id="messageBox" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg hidden">
+            Please enter valid start and end times.
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        const MINUTES_IN_HOUR = 60;
+        const MINUTES_IN_DAY = 24 * MINUTES_IN_HOUR;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateDuration(); 
+            document.getElementById('startTime').addEventListener('change', calculateDuration);
+            document.getElementById('endTime').addEventListener('change', calculateDuration);
+        });
+
+        function timeToMinutes(timeStr) {
+            if (!timeStr) return null;
+            const [h, m] = timeStr.split(':').map(Number);
+            if (isNaN(h) || isNaN(m)) return null;
+            return (h * MINUTES_IN_HOUR) + m;
+        }
+
+        function formatMinutesToDuration(totalMinutes) {
+            const hours = Math.floor(totalMinutes / MINUTES_IN_HOUR);
+            const minutes = totalMinutes % MINUTES_IN_HOUR;
+            const parts = [];
+            if (hours > 0) parts.push(`${hours} hr${hours !== 1 ? 's' : ''}`);
+            if (minutes > 0 || hours === 0) parts.push(`${minutes} min${minutes !== 1 ? 's' : ''}`);
+            return parts.join(' ');
+        }
+
+        function calculateDuration() {
+            const startTimeInput = document.getElementById('startTime').value;
+            const endTimeInput = document.getElementById('endTime').value;
+            const resultContainer = document.getElementById('resultContainer');
+            const resultDisplay = document.getElementById('resultDisplay');
+            const messageBox = document.getElementById('messageBox');
+
+            // Reset UI
+            resultContainer.classList.add('hidden');
+            messageBox.classList.add('hidden');
+
+            const startMinutes = timeToMinutes(startTimeInput);
+            const endMinutes = timeToMinutes(endTimeInput);
+
+            if (startMinutes === null || endMinutes === null) {
+                messageBox.textContent = "Please ensure both Start Time and End Time are entered correctly.";
+                messageBox.classList.remove('hidden');
+                return;
+            }
+
+            let totalDurationMins = 0;
+
+            if (endMinutes === startMinutes) {
+                totalDurationMins = MINUTES_IN_DAY;
+            } else if (endMinutes < startMinutes) {
+                totalDurationMins = (MINUTES_IN_DAY - startMinutes) + endMinutes;
+            } else {
+                totalDurationMins = endMinutes - startMinutes;
+            }
+
+            const formatted = formatMinutesToDuration(totalDurationMins);
+            resultDisplay.textContent = formatted;
+            resultContainer.classList.remove('hidden');
+        }
+    </script>
+
+</body>
+</html>
